@@ -893,7 +893,7 @@ return data.gtmOnSuccess();
 // *** UPDATE THE GTM CONSENT STATE ACCORDING TO THE STATE OF THE CONFIGURED FIDES CONSENT PRIVACY NOTICES *** 
 // 1. compare the Fides.consent object against the CONSENT_MAP  
 // 2. if the consent value is found in the CONSENT_MAP, set the corresponding GTM consent signal
-// 3. when the Fides consent value is not found, it won't be used in the consent update event 
+// 3. when the Fides consent value is not found, it won't be used in the consent update event, meaning we fall back to regional defaults
 
 function updateGTMConsent(fidesConsent) {
   const gtmConsent = {};
