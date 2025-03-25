@@ -802,6 +802,10 @@ const updateConsentState = require("updateConsentState");
  * page loads, which is why we call updateConsentState on FidesInitialized.
  */
 
+// The `data` object referenced throughout this template is a reference to the GTM template's configuration fields, which are defined in template-params.json
+// For example, data.regionalOverrides is defined here: https://github.com/ethyca/gtm-template/blob/867725887c519cedb56b24b3c815cdc66f1fd7ac/src/template-params.json#L137-L138
+// GTM docs reference: https://developers.google.com/tag-platform/tag-manager/templates#create_your_first_custom_tag_template
+
 // Time to wait for Fides.js to initialize and update the consent
 const WAIT_FOR_UPDATE = data.waitForUpdate;
 
