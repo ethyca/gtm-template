@@ -802,10 +802,16 @@ const updateConsentState = require("updateConsentState");
  * page loads, which is why we call updateConsentState on FidesInitialized.
  */
 
+// The `data` object referenced throughout this template is a reference to the GTM template's configuration fields, which are defined in template-params.json
+// For example, data.regionalOverrides is defined here: https://github.com/ethyca/gtm-template/blob/013f869434676cd16ea09d4266e68f3685258209/src/template-params.json#L137
+// GTM docs reference: https://developers.google.com/tag-platform/tag-manager/templates#create_your_first_custom_tag_template
+
 // Time to wait for Fides.js to initialize and update the consent
 const WAIT_FOR_UPDATE = data.waitForUpdate;
 
 // Map between GTM and Fides consent types
+// associates Fides privacy notice keys with consent mode categories
+
 const CONSENT_MAP = {
   ad_storage: [
     "marketing",
@@ -838,7 +844,13 @@ const CONSENT_MAP = {
 };
 
 if (data.event === "gtm.init_consent") {
+
   // The default Consent Initialization trigger fired
+  // sets Consent Mode "On-Page Default" states only 
+
+ // reads regional consent overrides defined in the configuration and sets the default consent state
+ // this step ensures that the regional consent overrides take precedence
+
   log("Setting the default consent state");
   if (data.regionalOverrides) {
     for (const defaults of data.regionalOverrides) {
@@ -851,10 +863,14 @@ if (data.event === "gtm.init_consent") {
       setDefaultConsentState(obj);
     }
   }
-  
+
+
+  // sets default consent values according to the tag configuration 
+  // will be overriden by regional consent values set in the code block above
+
   const consent = {};
   for (const key in CONSENT_MAP) {
-    consent[key] = data["default_" + key];
+    consent[key] = data["default_" + key];   
   }
   consent.wait_for_update = WAIT_FOR_UPDATE;
   setDefaultConsentState(consent);
@@ -868,7 +884,8 @@ if (data.event === "gtm.init_consent") {
   }
 
 } else if (data.fides && (data.event === "FidesInitialized" || data.event === "FidesUpdating")) {
-  // We use both FidesInitialized and FidesUpdating events to update the consent
+  // we use both FidesInitialized and FidesUpdating events to update the consent, i.e. GTM's "On-page Update"
+  // this update only has an effect when Fides.consent contains privacy notice keys
   log("Updating the consent from Fides");
   updateGTMConsent(data.fides.consent);
 }
@@ -876,6 +893,11 @@ if (data.event === "gtm.init_consent") {
 return data.gtmOnSuccess();
 
 // Only function definitions below this line
+
+// *** UPDATE THE GTM CONSENT STATE ACCORDING TO THE STATE OF THE CONFIGURED FIDES CONSENT PRIVACY NOTICES *** 
+// 1. compare the Fides.consent object against the CONSENT_MAP  
+// 2. if the consent value is found in the CONSENT_MAP, set the corresponding GTM consent signal
+// 3. when the Fides consent value is not found, it won't be used in the consent update event, meaning we fall back to regional defaults
 
 function updateGTMConsent(fidesConsent) {
   const gtmConsent = {};
@@ -889,11 +911,6 @@ function updateGTMConsent(fidesConsent) {
         gtmConsent[key] = "denied";
         break;
       }
-    }
-
-    // If none of the values are present, then fall back to the default from the data object
-    if (gtmConsent[key] === undefined) {
-      gtmConsent[key] = data["default_" + key];
     }
   }
 
