@@ -781,7 +781,6 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const callInWindow = require("callInWindow");
 const injectScript = require("injectScript");
-const log = require("logToConsole");
 const setDefaultConsentState = require("setDefaultConsentState");
 const updateConsentState = require("updateConsentState");
 
@@ -851,7 +850,6 @@ if (data.event === "gtm.init_consent") {
  // reads regional consent overrides defined in the configuration and sets the default consent state
  // this step ensures that the regional consent overrides take precedence
 
-  log("Setting the default consent state");
   if (data.regionalOverrides) {
     for (const defaults of data.regionalOverrides) {
       const obj = {};
@@ -876,7 +874,6 @@ if (data.event === "gtm.init_consent") {
   setDefaultConsentState(consent);
 
   if (data.scriptUrl) {
-    log("Injecting Fides.js");
     return injectScript(data.scriptUrl, function() {
       callInWindow("Fides.gtm");
       data.gtmOnSuccess();
@@ -886,7 +883,6 @@ if (data.event === "gtm.init_consent") {
 } else if (data.fides && (data.event === "FidesInitialized" || data.event === "FidesUpdating")) {
   // we use both FidesInitialized and FidesUpdating events to update the consent, i.e. GTM's "On-page Update"
   // this update only has an effect when Fides.consent contains privacy notice keys
-  log("Updating the consent from Fides");
   updateGTMConsent(data.fides.consent);
 }
 
@@ -903,15 +899,14 @@ function updateGTMConsent(fidesConsent) {
   const gtmConsent = {};
 
   for (const key in CONSENT_MAP) {
+    const values = [];
     for (const value of CONSENT_MAP[key]) {
-      if (fidesConsent[value] === true) {
-        gtmConsent[key] = "granted";
-        break;
-      } else if (fidesConsent[value] === false) {
-        gtmConsent[key] = "denied";
-        break;
+      const consent = fidesConsent[value];
+      if (consent !== undefined) {
+        values.push(consent);
       }
     }
+    gtmConsent[key] = values.every(value => value) ? "granted" : "denied";
   }
 
   updateConsentState(gtmConsent);
