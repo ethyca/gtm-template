@@ -698,4 +698,3 @@ function updateGTMConsent(fidesConsent) {
 ___TESTS___
 
 scenarios: []
-
