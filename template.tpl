@@ -161,223 +161,6 @@ ___TEMPLATE_PARAMETERS___
   },
   {
     "type": "GROUP",
-    "name": "Regional Consent Defaults",
-    "displayName": "Regional Consent Defaults",
-    "groupStyle": "ZIPPY_CLOSED",
-    "subParams": [
-      {
-        "type": "PARAM_TABLE",
-        "name": "regionalOverrides",
-        "displayName": "Regional Consent Defaults",
-        "paramTableColumns": [
-          {
-            "param": {
-              "type": "TEXT",
-              "name": "region",
-              "displayName": "Region",
-              "simpleValueType": true,
-              "valueHint": "US-CA",
-              "help": "Comma separated list of ISO 3166-2 regions"
-            },
-            "isUnique": true
-          },
-          {
-            "param": {
-              "type": "SELECT",
-              "name": "analytics_storage",
-              "displayName": "analytics_storage",
-              "macrosInSelect": true,
-              "selectItems": [
-                {
-                  "value": "granted",
-                  "displayValue": "Granted"
-                },
-                {
-                  "value": "denied",
-                  "displayValue": "Denied"
-                }
-              ],
-              "simpleValueType": true,
-              "defaultValue": "denied"
-            },
-            "isUnique": false
-          },
-          {
-            "param": {
-              "type": "SELECT",
-              "name": "ad_storage",
-              "displayName": "ad_storage",
-              "macrosInSelect": true,
-              "selectItems": [
-                {
-                  "value": "granted",
-                  "displayValue": "Granted"
-                },
-                {
-                  "value": "denied",
-                  "displayValue": "Denied"
-                }
-              ],
-              "simpleValueType": true,
-              "defaultValue": "denied"
-            },
-            "isUnique": false
-          },
-          {
-            "param": {
-              "type": "SELECT",
-              "name": "ad_user_data",
-              "displayName": "ad_user-data",
-              "macrosInSelect": true,
-              "selectItems": [
-                {
-                  "value": "granted",
-                  "displayValue": "Granted"
-                },
-                {
-                  "value": "denied",
-                  "displayValue": "Denied"
-                }
-              ],
-              "simpleValueType": true,
-              "defaultValue": "denied"
-            },
-            "isUnique": false
-          },
-          {
-            "param": {
-              "type": "SELECT",
-              "name": "ad_personalization",
-              "displayName": "ad_personalization",
-              "macrosInSelect": true,
-              "selectItems": [
-                {
-                  "value": "granted",
-                  "displayValue": "Granted"
-                },
-                {
-                  "value": "denied",
-                  "displayValue": "Denied"
-                }
-              ],
-              "simpleValueType": true,
-              "defaultValue": "denied"
-            },
-            "isUnique": false
-          },
-          {
-            "param": {
-              "type": "SELECT",
-              "name": "personalization_storage",
-              "displayName": "personalization_storage",
-              "macrosInSelect": true,
-              "selectItems": [
-                {
-                  "value": "granted",
-                  "displayValue": "Granted"
-                },
-                {
-                  "value": "denied",
-                  "displayValue": "Denied"
-                }
-              ],
-              "simpleValueType": true,
-              "defaultValue": "denied"
-            },
-            "isUnique": false
-          },
-          {
-            "param": {
-              "type": "SELECT",
-              "name": "functionality_storage",
-              "displayName": "functionality_storage",
-              "macrosInSelect": true,
-              "selectItems": [
-                {
-                  "value": "granted",
-                  "displayValue": "Granted"
-                },
-                {
-                  "value": "denied",
-                  "displayValue": "Denied"
-                }
-              ],
-              "simpleValueType": true,
-              "defaultValue": "granted"
-            },
-            "isUnique": false
-          },
-          {
-            "param": {
-              "type": "SELECT",
-              "name": "security_storage",
-              "displayName": "security_storage",
-              "macrosInSelect": true,
-              "selectItems": [
-                {
-                  "value": "granted",
-                  "displayValue": "Granted"
-                },
-                {
-                  "value": "denied",
-                  "displayValue": "Denied"
-                }
-              ],
-              "simpleValueType": true,
-              "defaultValue": "granted"
-            },
-            "isUnique": false
-          }
-        ],
-        "help": "Override consent defaults by region here.",
-        "newRowButtonText": "Override regional default",
-        "defaultValue": [
-          {
-            "region": "US",
-            "analytics_storage": "granted",
-            "ad_storage": "granted",
-            "ad_user_data": "granted",
-            "ad_personalization": "granted",
-            "personalization_storage": "granted",
-            "functionality_storage": "granted",
-            "security_storage": "granted"
-          },
-          {
-            "region": "CA",
-            "analytics_storage": "granted",
-            "ad_storage": "granted",
-            "ad_user_data": "granted",
-            "ad_personalization": "granted",
-            "personalization_storage": "granted",
-            "functionality_storage": "granted",
-            "security_storage": "granted"
-          },
-          {
-            "region": "CA-QC",
-            "analytics_storage": "denied",
-            "ad_storage": "denied",
-            "ad_user_data": "denied",
-            "ad_personalization": "denied",
-            "personalization_storage": "denied",
-            "functionality_storage": "denied",
-            "security_storage": "granted"
-          },
-          {
-            "region": "BE,EL,LT,PT,BG,ES,LU,RO,CZ,FR,HU,SI,DK,HR,MT,SK,DE,IT,NL,FI,EE,CY,AT,SE,IE,LV,PL,IS,NO,LI,CH",
-            "analytics_storage": "denied",
-            "ad_storage": "denied",
-            "ad_user_data": "denied",
-            "ad_personalization": "denied",
-            "personalization_storage": "denied",
-            "functionality_storage": "denied",
-            "security_storage": "granted"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "type": "GROUP",
     "name": "Settings",
     "displayName": "Settings",
     "groupStyle": "ZIPPY_CLOSED",
@@ -781,7 +564,6 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const callInWindow = require("callInWindow");
 const injectScript = require("injectScript");
-const log = require("logToConsole");
 const setDefaultConsentState = require("setDefaultConsentState");
 const updateConsentState = require("updateConsentState");
 
@@ -851,7 +633,6 @@ if (data.event === "gtm.init_consent") {
  // reads regional consent overrides defined in the configuration and sets the default consent state
  // this step ensures that the regional consent overrides take precedence
 
-  log("Setting the default consent state");
   if (data.regionalOverrides) {
     for (const defaults of data.regionalOverrides) {
       const obj = {};
@@ -876,7 +657,6 @@ if (data.event === "gtm.init_consent") {
   setDefaultConsentState(consent);
 
   if (data.scriptUrl) {
-    log("Injecting Fides.js");
     return injectScript(data.scriptUrl, function() {
       callInWindow("Fides.gtm");
       data.gtmOnSuccess();
@@ -886,7 +666,6 @@ if (data.event === "gtm.init_consent") {
 } else if (data.fides && (data.event === "FidesInitialized" || data.event === "FidesUpdating")) {
   // we use both FidesInitialized and FidesUpdating events to update the consent, i.e. GTM's "On-page Update"
   // this update only has an effect when Fides.consent contains privacy notice keys
-  log("Updating the consent from Fides");
   updateGTMConsent(data.fides.consent);
 }
 
@@ -903,15 +682,14 @@ function updateGTMConsent(fidesConsent) {
   const gtmConsent = {};
 
   for (const key in CONSENT_MAP) {
+    const values = [];
     for (const value of CONSENT_MAP[key]) {
-      if (fidesConsent[value] === true) {
-        gtmConsent[key] = "granted";
-        break;
-      } else if (fidesConsent[value] === false) {
-        gtmConsent[key] = "denied";
-        break;
+      const consent = fidesConsent[value];
+      if (consent !== undefined) {
+        values.push(consent);
       }
     }
+    gtmConsent[key] = values.every(value => value) ? "granted" : "denied";
   }
 
   updateConsentState(gtmConsent);
@@ -920,4 +698,3 @@ function updateGTMConsent(fidesConsent) {
 ___TESTS___
 
 scenarios: []
-
