@@ -1,9 +1,10 @@
-
 const callInWindow = require("callInWindow");
 const injectScript = require("injectScript");
 const setDefaultConsentState = require("setDefaultConsentState");
 const updateConsentState = require("updateConsentState");
-
+const logToConsole = require("logToConsole");
+const createQueue = require("createQueue");
+const dataLayerPush = createQueue('dataLayer');
 /*
  * Because we can't rely on Fides.js to be initialized or even loaded before the GTM container, we use
  * the GTM events to update the consent state. If Fides.js runs before this, it will push the events to
@@ -22,7 +23,6 @@ const updateConsentState = require("updateConsentState");
  */
 
 // The `data` object referenced throughout this template is a reference to the GTM template's configuration fields, which are defined in template-params.json
-// For example, data.regionalOverrides is defined here: https://github.com/ethyca/gtm-template/blob/013f869434676cd16ea09d4266e68f3685258209/src/template-params.json#L137
 // GTM docs reference: https://developers.google.com/tag-platform/tag-manager/templates#create_your_first_custom_tag_template
 
 // Time to wait for Fides.js to initialize and update the consent
@@ -130,4 +130,8 @@ function updateGTMConsent(fidesConsent) {
   }
 
   updateConsentState(gtmConsent);
+
+  // push an event to the dataLayer that represents the updated consent mode state 
+  // this event will contain the latest consent update state and can be used as a trigger event
+  dataLayerPush({}, { 'event': "FidesConsentModeUpdated"});
 }
