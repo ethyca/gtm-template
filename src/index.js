@@ -2,9 +2,10 @@ const callInWindow = require("callInWindow");
 const injectScript = require("injectScript");
 const setDefaultConsentState = require("setDefaultConsentState");
 const updateConsentState = require("updateConsentState");
-const logToConsole = require("logToConsole");
 const createQueue = require("createQueue");
 const dataLayerPush = createQueue('dataLayer');
+
+
 /*
  * Because we can't rely on Fides.js to be initialized or even loaded before the GTM container, we use
  * the GTM events to update the consent state. If Fides.js runs before this, it will push the events to
@@ -23,6 +24,7 @@ const dataLayerPush = createQueue('dataLayer');
  */
 
 // The `data` object referenced throughout this template is a reference to the GTM template's configuration fields, which are defined in template-params.json
+// For example, data.regionalOverrides is defined here: https://github.com/ethyca/gtm-template/blob/013f869434676cd16ea09d4266e68f3685258209/src/template-params.json#L137
 // GTM docs reference: https://developers.google.com/tag-platform/tag-manager/templates#create_your_first_custom_tag_template
 
 // Time to wait for Fides.js to initialize and update the consent
@@ -100,7 +102,7 @@ if (data.event === "gtm.init_consent") {
     }, data.gtmOnFailure);
   }
 
-} else if (data.fides && (data.event === "FidesInitialized" || data.event === "FidesUpdating")) {
+} else if (data.fides && (data.event === "FidesInitialized" || data.event === "FidesUpdated")) {
   // we use both FidesInitialized and FidesUpdating events to update the consent, i.e. GTM's "On-page Update"
   // this update only has an effect when Fides.consent contains privacy notice keys
   updateGTMConsent(data.fides.consent);
@@ -128,10 +130,11 @@ function updateGTMConsent(fidesConsent) {
     }
     gtmConsent[key] = values.every(value => value) ? "granted" : "denied";
   }
-
+  
   updateConsentState(gtmConsent);
-
-  // push an event to the dataLayer that represents the updated consent mode state 
-  // this event will contain the latest consent update state and can be used as a trigger event
-  dataLayerPush({}, { 'event': "FidesConsentModeUpdated"});
+  
+  const fidesEventEcho =  "FidesConsentMode" + data.event.split("Fides")[1]; 
+  
+  // add an event to the dataLayer that will be up-to-date with consent mode
+  dataLayerPush({ 'Fides': data.fides , 'event': fidesEventEcho });
 }
