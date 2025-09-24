@@ -627,8 +627,8 @@ const CONSENT_MAP = {
 };
 
 const isFidesEvent = data.event.indexOf("Fides") > -1;
-const isFidesConsentModeEvent = data.event.indexOf("FidesConsentMode") < 0;
-const isNonConsentModeFidesEvent = isFidesEvent && isFidesConsentModeEvent;
+const isFidesConsentModeEvent = data.event.indexOf("FidesConsentMode") > -1;
+const isNonConsentModeFidesEvent = isFidesEvent && !isFidesConsentModeEvent;
 
 if (data.event === "gtm.init_consent") {
   // The default Consent Initialization trigger fired
