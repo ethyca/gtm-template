@@ -634,8 +634,8 @@ if (data.event === "gtm.init_consent") {
   // The default Consent Initialization trigger fired
   // sets Consent Mode "On-Page Default" states only
 
-  // Reads regional consent overrides defined in the configuration and sets the default consent state
-  // This step ensures that the regional consent overrides take precedence
+  // Reads regional consent overrides defined in the configuration and sets the default consent state 
+  // If regional consent overrides exist, ensure they take precedence
   // By default regional overrides are not included in the template
   if (data.regionalOverrides) {
     for (const defaults of data.regionalOverrides) {
@@ -680,7 +680,7 @@ return data.gtmOnSuccess();
 // *** UPDATE THE GTM CONSENT STATE ACCORDING TO THE STATE OF THE CONFIGURED FIDES CONSENT PRIVACY NOTICES ***
 // 1. Compare the Fides.consent object against the CONSENT_MAP
 // 2. If the consent value is found in the CONSENT_MAP, set the corresponding GTM consent signal
-// 3. When the Fides consent value is not found, it won't be used in the consent update event, meaning we fall back to regional defaults
+
 function updateGTMConsent(fidesConsent, event) {
   const gtmConsent = {};
   const fidesConsentModeEvent = "FidesConsentMode" + event.split("Fides")[1];
