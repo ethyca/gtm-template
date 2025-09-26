@@ -566,26 +566,28 @@ const callInWindow = require("callInWindow");
 const injectScript = require("injectScript");
 const setDefaultConsentState = require("setDefaultConsentState");
 const updateConsentState = require("updateConsentState");
+const createQueue = require("createQueue");
+
+const dataLayerPush = createQueue("dataLayer");
 
 /*
  * Because we can't rely on Fides.js to be initialized or even loaded before the GTM container, we use
  * the GTM events to update the consent state. If Fides.js runs before this, it will push the events to
  * the dataLayer and they will be processed asynchronously when the GTM container loads. To get the Fides*
  * events, the page loading Fides.js needs to call Fides.gtm() immediately after.
- * 
+ *
  * The events we are interested in:
  *
  *   gtm.init_consent  - The default consent initialization event that GTM fires when the container loads
  *   FidesInitialized  - The event that Fides.js fires when it has initialized
  *   FidesUpdating     - This is the event that Fides.js fires when the consent state is being updated
- * 
+ *
  * The expected behavior for a consent mode template is to set the default consent state when the GTM
  * container loads and then update it with the actual user preference. The consent is not saved across
  * page loads, which is why we call updateConsentState on FidesInitialized.
  */
 
 // The `data` object referenced throughout this template is a reference to the GTM template's configuration fields, which are defined in template-params.json
-// For example, data.regionalOverrides is defined here: https://github.com/ethyca/gtm-template/blob/013f869434676cd16ea09d4266e68f3685258209/src/template-params.json#L137
 // GTM docs reference: https://developers.google.com/tag-platform/tag-manager/templates#create_your_first_custom_tag_template
 
 // Time to wait for Fides.js to initialize and update the consent
@@ -593,7 +595,6 @@ const WAIT_FOR_UPDATE = data.waitForUpdate;
 
 // Map between GTM and Fides consent types
 // associates Fides privacy notice keys with consent mode categories
-
 const CONSENT_MAP = {
   ad_storage: [
     "marketing",
@@ -625,14 +626,17 @@ const CONSENT_MAP = {
   security_storage: ["essential"],
 };
 
+const isFidesEvent = data.event.indexOf("Fides") > -1;
+const isFidesConsentModeEvent = data.event.indexOf("FidesConsentMode") > -1;
+const isNonConsentModeFidesEvent = isFidesEvent && !isFidesConsentModeEvent;
+
 if (data.event === "gtm.init_consent") {
-
   // The default Consent Initialization trigger fired
-  // sets Consent Mode "On-Page Default" states only 
+  // sets Consent Mode "On-Page Default" states only
 
- // reads regional consent overrides defined in the configuration and sets the default consent state
- // this step ensures that the regional consent overrides take precedence
-
+  // Reads regional consent overrides defined in the configuration and sets the default consent state 
+  // If regional consent overrides exist, ensure they take precedence
+  // By default regional overrides are not included in the template
   if (data.regionalOverrides) {
     for (const defaults of data.regionalOverrides) {
       const obj = {};
@@ -645,41 +649,41 @@ if (data.event === "gtm.init_consent") {
     }
   }
 
-
-  // sets default consent values according to the tag configuration 
-  // will be overriden by regional consent values set in the code block above
-
+  // Sets default consent values according to the tag configuration
+  // Will be overridden by regional consent values set above
   const consent = {};
   for (const key in CONSENT_MAP) {
-    consent[key] = data["default_" + key];   
+    consent[key] = data["default_" + key];
   }
   consent.wait_for_update = WAIT_FOR_UPDATE;
   setDefaultConsentState(consent);
 
   if (data.scriptUrl) {
-    return injectScript(data.scriptUrl, function() {
-      callInWindow("Fides.gtm");
-      data.gtmOnSuccess();
-    }, data.gtmOnFailure);
+    return injectScript(
+      data.scriptUrl,
+      function () {
+        callInWindow("Fides.gtm");
+        data.gtmOnSuccess();
+      },
+      data.gtmOnFailure
+    );
   }
-
-} else if (data.fides && (data.event === "FidesInitialized" || data.event === "FidesUpdating")) {
-  // we use both FidesInitialized and FidesUpdating events to update the consent, i.e. GTM's "On-page Update"
-  // this update only has an effect when Fides.consent contains privacy notice keys
-  updateGTMConsent(data.fides.consent);
+} else if (isNonConsentModeFidesEvent) {
+  // This update only has an effect when Fides.consent contains privacy notice keys
+  updateGTMConsent(data.fides.consent, data.event);
 }
 
 return data.gtmOnSuccess();
 
 // Only function definitions below this line
 
-// *** UPDATE THE GTM CONSENT STATE ACCORDING TO THE STATE OF THE CONFIGURED FIDES CONSENT PRIVACY NOTICES *** 
-// 1. compare the Fides.consent object against the CONSENT_MAP  
-// 2. if the consent value is found in the CONSENT_MAP, set the corresponding GTM consent signal
-// 3. when the Fides consent value is not found, it won't be used in the consent update event, meaning we fall back to regional defaults
+// *** UPDATE THE GTM CONSENT STATE ACCORDING TO THE STATE OF THE CONFIGURED FIDES CONSENT PRIVACY NOTICES ***
+// 1. Compare the Fides.consent object against the CONSENT_MAP
+// 2. If the consent value is found in the CONSENT_MAP, set the corresponding GTM consent signal
 
-function updateGTMConsent(fidesConsent) {
+function updateGTMConsent(fidesConsent, event) {
   const gtmConsent = {};
+  const fidesConsentModeEvent = "FidesConsentMode" + event.split("Fides")[1];
 
   for (const key in CONSENT_MAP) {
     const values = [];
@@ -689,12 +693,20 @@ function updateGTMConsent(fidesConsent) {
         values.push(consent);
       }
     }
-    gtmConsent[key] = values.every(value => value) ? "granted" : "denied";
+    gtmConsent[key] = values.every((value) => value) ? "granted" : "denied";
   }
 
   updateConsentState(gtmConsent);
+
+  // Push an event to the dataLayer that represents the updated consent mode state
+  // This event will contain the latest consent update state and can be used as a trigger event
+  dataLayerPush({
+    Fides: data.fides.consent,
+    event: fidesConsentModeEvent,
+  });
 }
 
 ___TESTS___
 
 scenarios: []
+
