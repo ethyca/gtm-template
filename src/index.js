@@ -114,8 +114,6 @@ return data.gtmOnSuccess();
 
 function updateGTMConsent(fidesConsent, event) {
   const gtmConsent = {};
-  const fidesConsentModeEvent = "FidesConsentMode" + event.split("Fides")[1];
-
   for (const key in CONSENT_MAP) {
     const values = [];
     for (const value of CONSENT_MAP[key]) {
