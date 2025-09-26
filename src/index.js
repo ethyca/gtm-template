@@ -1,8 +1,5 @@
-const callInWindow = require("callInWindow");
-const injectScript = require("injectScript");
 const setDefaultConsentState = require("setDefaultConsentState");
 const updateConsentState = require("updateConsentState");
-const createQueue = require("createQueue");
 
 /*
  * Because we can't rely on Fides.js to be initialized or even loaded before the GTM container, we use
