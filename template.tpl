@@ -660,7 +660,7 @@ if (data.event === "gtm.init_consent") {
       data.gtmOnFailure
     ); 
   } 
-} else if (isNonConsentModeFidesEvent) {
+} else if (data.event.indexOf("Fides") > -1) {
   // This update only has an effect when Fides.consent contains privacy notice keys
   updateGTMConsent(data.fides.consent, data.event);
 }
