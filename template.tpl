@@ -564,7 +564,8 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
 const setDefaultConsentState = require("setDefaultConsentState");
 const updateConsentState = require("updateConsentState");
-
+const callInWindow = require("callInWindow");
+const injectScript = require("injectScript");
 /*
  * Because we can't rely on Fides.js to be initialized or even loaded before the GTM container, we use
  * the GTM events to update the consent state. If Fides.js runs before this, it will push the events to
