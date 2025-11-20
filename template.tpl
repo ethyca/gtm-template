@@ -601,14 +601,10 @@ ___WEB_PERMISSIONS___
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
-const callInWindow = require("callInWindow");
-const injectScript = require("injectScript");
 const setDefaultConsentState = require("setDefaultConsentState");
 const updateConsentState = require("updateConsentState");
-const createQueue = require("createQueue");
-
-const dataLayerPush = createQueue("dataLayer");
-
+const callInWindow = require("callInWindow");
+const injectScript = require("injectScript");
 /*
  * Because we can't rely on Fides.js to be initialized or even loaded before the GTM container, we use
  * the GTM events to update the consent state. If Fides.js runs before this, it will push the events to
@@ -665,9 +661,6 @@ const CONSENT_MAP = {
   security_storage: ["essential"],
 };
 
-const isFidesEvent = data.event.indexOf("Fides") > -1;
-const isFidesConsentModeEvent = data.event.indexOf("FidesConsentMode") > -1;
-const isNonConsentModeFidesEvent = isFidesEvent && !isFidesConsentModeEvent;
 
 if (data.event === "gtm.init_consent") {
   // The default Consent Initialization trigger fired
@@ -705,9 +698,9 @@ if (data.event === "gtm.init_consent") {
         data.gtmOnSuccess();
       },
       data.gtmOnFailure
-    );
-  }
-} else if (isNonConsentModeFidesEvent) {
+    ); 
+  } 
+} else if (data.event.indexOf("Fides") > -1) {
   // This update only has an effect when Fides.consent contains privacy notice keys
   updateGTMConsent(data.fides.consent, data.event);
 }
@@ -722,8 +715,6 @@ return data.gtmOnSuccess();
 
 function updateGTMConsent(fidesConsent, event) {
   const gtmConsent = {};
-  const fidesConsentModeEvent = "FidesConsentMode" + event.split("Fides")[1];
-
   for (const key in CONSENT_MAP) {
     const values = [];
     for (const value of CONSENT_MAP[key]) {
@@ -737,12 +728,6 @@ function updateGTMConsent(fidesConsent, event) {
 
   updateConsentState(gtmConsent);
 
-  // Push an event to the dataLayer that represents the updated consent mode state
-  // This event will contain the latest consent update state and can be used as a trigger event
-  dataLayerPush({
-    Fides: data.fides.consent,
-    event: fidesConsentModeEvent,
-  });
 }
 
 ___TESTS___
